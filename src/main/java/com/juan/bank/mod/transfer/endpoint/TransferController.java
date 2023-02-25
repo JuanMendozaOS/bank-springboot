@@ -86,7 +86,7 @@ public class TransferController {
     if (currency == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Se debe pasar la moneda");
     }
-    if (transfer.getAmount().compareTo(BigDecimal.ZERO) < 1){
+    if (transfer.getAmount().compareTo(BigDecimal.ZERO) < 1) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El monto debe ser positivo");
     }
 
@@ -102,13 +102,6 @@ public class TransferController {
     } else {
       return receiveTransfer(transfer);
     }
-  }
-
-  private Transfer createTransfer(Transfer transfer) {
-    Transfer entity = transfer;
-    entity.setOperationDate(LocalDateTime.now());
-    entity = transferService.create(entity);
-    return entity;
   }
 
   private ResponseEntity<Transfer> receiveTransfer(Transfer transfer) {
@@ -173,13 +166,7 @@ public class TransferController {
       createMovement(entity, fromAccount, entity.getAmount().negate(), false);
 
       // enviar solicitud y esperar una respuesta
-      HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
-      HttpEntity<Transfer> requestEntity = new HttpEntity<>(entity, headers);
-
-      ResponseEntity<Transfer> response = restTemplate.exchange("http://192.168.126.49:8080/transfers",
-              HttpMethod.POST, requestEntity, Transfer.class);
-
+      ResponseEntity<Transfer> response = postTransferRequest(entity, "http://192.168.126.49:8080/transfers");
 
       // si response OK
       if (response.getStatusCode().equals(HttpStatus.OK)) {
@@ -217,15 +204,14 @@ public class TransferController {
     }
   }
 
-  // TODO terminal internalTransfer
+
   private ResponseEntity<Transfer> internalTransfer(Transfer transfer) {
     Account fromAccount = accountService.findByIban(transfer.getFromIban());
     Account toAccount = accountService.findByIban(transfer.getToIban());
 
-    if(!validateAccounts(transfer, fromAccount, toAccount).get("")){
+    if (!validateAccounts(transfer, fromAccount, toAccount).get("")) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    };
-
+    }
 
     Balance fromBalance = balanceService.findByAccountId(fromAccount.getId());
     Balance toBalance = balanceService.findByAccountId(toAccount.getId());
@@ -238,7 +224,15 @@ public class TransferController {
     Transfer entity = new Transfer();
     entity.setTransactionState("EN PROCESO");
     entity = createTransfer(transfer);
-    return null;
+
+    // para cuenta de origen
+    updateBalance(fromBalance, transfer.getAmount().negate());
+    createMovement(transfer, fromAccount, transfer.getAmount().negate(), false);
+
+    // para cuenta de destino
+    updateBalance(toBalance, transfer.getAmount());
+    createMovement(transfer, toAccount, transfer.getAmount(), false);
+    return new ResponseEntity<>(entity, HttpStatus.OK);
   }
 
 
@@ -250,13 +244,18 @@ public class TransferController {
   }
 
   private boolean containsNullOrEmpty(Transfer transfer) {
-    return transfer == null || transfer.getFromIban() == null || transfer.getFromIban().isEmpty()
-            || transfer.getFromDocumentNumber() == null || transfer.getFromDocumentNumber().isEmpty()
-            || transfer.getFromBankCode() == null || transfer.getFromBankCode().isEmpty()
-            || transfer.getFromDocumentType() == null || transfer.getToIban() == null
-            || transfer.getToIban().isEmpty() || transfer.getToDocumentNumber() == null
-            || transfer.getToDocumentNumber().isEmpty() || transfer.getToBankCode() == null
-            || transfer.getToBankCode().isEmpty() || transfer.getToDocumentType() == null;
+    if (transfer == null || transfer.getFromIban() == null || transfer.getFromDocumentNumber() == null
+            || transfer.getFromBankCode() == null || transfer.getFromDocumentType() == null
+            || transfer.getToIban() == null || transfer.getToDocumentNumber() == null
+            || transfer.getToBankCode() == null || transfer.getToDocumentType() == null) {
+      return true;
+    }
+    if (transfer.getFromIban().isEmpty() || transfer.getFromDocumentNumber().isEmpty()
+            || transfer.getFromBankCode().isEmpty() || transfer.getToIban().isEmpty()
+            || transfer.getToDocumentNumber().isEmpty() || transfer.getToBankCode().isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   private void createMovement(Transfer transfer, Account account, BigDecimal transferAmount, boolean isReverseTransfer) {
@@ -278,6 +277,24 @@ public class TransferController {
     }
   }
 
+  private Transfer createTransfer(Transfer transfer) {
+    Transfer entity = transfer;
+    entity.setOperationDate(LocalDateTime.now());
+    entity = transferService.create(entity);
+    return entity;
+  }
+
+
+  private ResponseEntity<Transfer> postTransferRequest(Transfer transfer, String url) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<Transfer> requestEntity = new HttpEntity<>(transfer, headers);
+
+    ResponseEntity<Transfer> response = restTemplate.exchange(url,
+            HttpMethod.POST, requestEntity, Transfer.class);
+    return response;
+  }
+
   private Map<String, Boolean> validateAccounts(Transfer transfer, Account fromAccount, Account toAccount) {
     Map<String, Boolean> result = new HashMap<>();
 
@@ -289,7 +306,7 @@ public class TransferController {
       result.put("Número de documento de origen incorrecto", false);
       return result;
     }
-    if (!fromAccount.getCustomer().getDocumentType().equals(transfer.getFromDocumentType())){
+    if (!fromAccount.getCustomer().getDocumentType().equals(transfer.getFromDocumentType())) {
       result.put("Tipo de documento de origen incorrecto", false);
       return result;
     }
@@ -302,11 +319,11 @@ public class TransferController {
       return result;
 
     }
-    if (!toAccount.getCustomer().getDocumentType().equals(transfer.getToDocumentType())){
+    if (!toAccount.getCustomer().getDocumentType().equals(transfer.getToDocumentType())) {
       result.put("Tipo de documento de destino incorrecto", false);
       return result;
     }
-    if (!toAccount.isEnabled()){
+    if (!toAccount.isEnabled()) {
       result.put("Cuenta de destino no habilitada", false);
       return result;
     }

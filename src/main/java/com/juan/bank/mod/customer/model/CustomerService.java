@@ -1,6 +1,7 @@
 package com.juan.bank.mod.customer.model;
 
 import com.juan.bank.app.model.EntityServiceInterface;
+import com.juan.bank.mod.account.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,4 +43,15 @@ public class CustomerService implements EntityServiceInterface<Customer> {
         return customerRepo.findByDocumentNumber(fromDocumentNumber);
     }
 
+    public boolean existsByEmail(String email) {
+        return customerRepo.existsByEmail(email);
+    }
+
+    public Account findByEmail(String email) {
+        return customerRepo.findByEmail(email);
+    }
+
+    public boolean existsByDocumentNumberAndDocumentType(String documentNumber, DocumentType documentType) {
+        return customerRepo.existsByDocumentNumberAndDocumentType(documentNumber, documentType);
+    }
 }

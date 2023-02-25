@@ -33,27 +33,38 @@ import java.util.List;
 @RequestMapping("/accounts")
 public class AccountController {
 
+
+  private final AccountService accountService;
+  private final WithdrawalService withdrawalService;
+  private final BalanceService balanceService;
+  private final DepositService depositService;
+  private final BankService bankService;
+  private final CustomerService customerService;
+  private final AccountTypeService accountTypeService;
+  private final CurrencyService currencyService;
+
   @Autowired
-  private AccountService accountService;
-  @Autowired
-  private WithdrawalService withdrawalService;
-  @Autowired
-  private BalanceService balanceService;
-  @Autowired
-  private DepositService depositService;
-  @Autowired
-  private BankService bankService;
-  @Autowired
-  private CustomerService customerService;
-  @Autowired
-  private AccountTypeService accountTypeService;
-  @Autowired
-  private CurrencyService currencyService;
+  public AccountController(AccountService accountService, WithdrawalService withdrawalService, BalanceService balanceService, DepositService depositService, BankService bankService, CustomerService customerService, AccountTypeService accountTypeService, CurrencyService currencyService) {
+    this.accountService = accountService;
+    this.withdrawalService = withdrawalService;
+    this.balanceService = balanceService;
+    this.depositService = depositService;
+    this.bankService = bankService;
+    this.customerService = customerService;
+    this.accountTypeService = accountTypeService;
+    this.currencyService = currencyService;
+  }
 
   @GetMapping("/{id}")
   public Account findById(@PathVariable("id") Long id) {
     return accountService.findById(id);
   }
+
+  @GetMapping
+  public List<Account> findAll() {
+    return accountService.findAll();
+  }
+
 
   @GetMapping("{accountId}/withdrawals")
   public List<Withdrawal> findAllAccountWithdrawals(@PathVariable("accountId") Long accountId) {
@@ -70,38 +81,26 @@ public class AccountController {
     return depositService.findAllAccountDeposits(accountId);
   }
 
-  @GetMapping
-  public List<Account> findAll() {
-    return accountService.findAll();
-  }
-
   @PostMapping
   public ResponseEntity<Account> create(@RequestBody Account account) {
     try {
-      if (account == null || account.getIban() == null || account.getIban().isEmpty()
-              || accountService.existsByIban(account.getIban())) {
+      if (containsNullOrEmpty(account)){
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
+      if(accountExists(account)){
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      }
+
       Bank bank = bankService.findById(account.getBank().getId());
       Customer customer = customerService.findById(account.getCustomer().getId());
       Currency currency = currencyService.findByIsoCode(account.getCurrency().getIsoCode());
       AccountType accountType = accountTypeService.findById(account.getAccountType().getId());
 
-      if (bank == null || customer == null || currency == null || accountType == null
-              || !bank.isEnabled() || !customer.isEnabled()) {
+      if(hasNullValue(bank, customer, currency, accountType)){
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
-      Account entity = new Account();
-      entity.setIban(account.getIban());
-      entity.setCustomer(customer);
-      entity.setBank(bank);
-      entity.setAccountType(accountType);
-      entity.setCurrency(currency);
-      entity.setCurrencyIsoCode(currency.getIsoCode());
-      entity.setEnabled(true);
-      entity = accountService.create(entity);
-
+      Account entity = createAccount(account, bank, customer, currency, accountType);
       createBalance(entity);
       return new ResponseEntity<>(entity, HttpStatus.OK);
 
@@ -109,6 +108,61 @@ public class AccountController {
       e.printStackTrace();
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @PatchMapping("/{id}")
+  public ResponseEntity<Account> updateEnabled(@PathVariable("id") Long id, @RequestBody Account account) {
+    try {
+      Account entity = accountService.findById(id);
+      if (entity == null) {
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity<>(update(entity, account), HttpStatus.OK);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private Account update(Account entity, Account account) {
+    entity.setEnabled(account.isEnabled());
+    return accountService.update(entity);
+  }
+
+  private Account createAccount(Account account, Bank bank, Customer customer, Currency currency, AccountType accountType) {
+    Account entity = new Account();
+    entity.setIban(account.getIban());
+    entity.setCustomer(customer);
+    entity.setBank(bank);
+    entity.setAccountType(accountType);
+    entity.setCurrency(currency);
+    entity.setCurrencyIsoCode(currency.getIsoCode());
+    entity.setEnabled(true);
+    return accountService.create(entity);
+  }
+
+  private boolean hasNullValue(Bank bank, Customer customer, Currency currency, AccountType accountType) {
+    if (bank == null || customer == null || currency == null || accountType == null) {
+      return true;
+    }
+    return false;
+  }
+
+  private boolean accountExists(Account account) {
+    return accountService.existsByIban(account.getIban());
+  }
+
+  private boolean containsNullOrEmpty(Account account) {
+    if (account == null || account.getIban() == null
+            || account.getAccountType() == null || account.getBank() == null
+            || account.getCurrencyIsoCode() == null || account.getCustomer() == null){
+      return true;
+    }
+    if (account.getCurrencyIsoCode().isEmpty() || account.getIban().isEmpty()){
+      return true;
+    }
+    return false;
   }
 
   private void createBalance(Account account) {
@@ -128,26 +182,5 @@ public class AccountController {
     }
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<Account> updateEnabled(@PathVariable("id") Long id, @RequestBody Account account) {
-    try {
-      if (!accountService.existsById(id)) {
-        return new ResponseEntity<>(HttpStatus.CONFLICT);
-      }
-
-      // si hay buscar entidad en DB
-      Account entity = accountService.findById(id);
-      if (entity == null) {
-        return new ResponseEntity<>(HttpStatus.CONFLICT);
-      }
-
-      entity.setEnabled(account.isEnabled());
-      entity = accountService.update(entity);
-      return new ResponseEntity<>(entity, HttpStatus.OK);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 
 }

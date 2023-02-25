@@ -26,23 +26,27 @@ import java.util.Objects;
 @RequestMapping
 public class DepositController {
 
+  private final DepositService depositService;
+  private final AccountService accountService;
+  private final CurrencyService currencyService;
+  private final BalanceService balanceService;
+  private final MovementService movementService;
+
   @Autowired
-  private DepositService depositService;
-  @Autowired
-  private AccountService accountService;
-  @Autowired
-  private CurrencyService currencyService;
-  @Autowired
-  private BalanceService balanceService;
-  @Autowired
-  private MovementService movementService;
+  public DepositController(DepositService depositService, AccountService accountService, CurrencyService currencyService, BalanceService balanceService, MovementService movementService) {
+    this.depositService = depositService;
+    this.accountService = accountService;
+    this.currencyService = currencyService;
+    this.balanceService = balanceService;
+    this.movementService = movementService;
+  }
 
   @PostMapping("/deposits")
-  public ResponseEntity<Deposit> create(@RequestBody Deposit deposit){
-
-    if (deposit == null || deposit.getAccount() == null
-            || Objects.equals(deposit.getAmount(), null) || deposit.getAmount().compareTo(BigDecimal.ZERO) <= 0
-            || deposit.getCurrencyIsoCode() == null || deposit.getCurrencyIsoCode().isEmpty()) {
+  public ResponseEntity<Deposit> create(@RequestBody Deposit deposit) {
+    if (containsNullOrEmpty(deposit)) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    if (deposit.getAmount().compareTo(BigDecimal.ZERO) < 1) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
@@ -51,26 +55,44 @@ public class DepositController {
     Balance balance = balanceService.findByAccountId(account.getId());
 
     // Verificar si no existe el account o moneda
-    if(account == null || currency == null){
+    if (account == null || currency == null) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    BigDecimal balanceAmount = balance.getAmount();
-    balance.setAmount(balanceAmount.add(deposit.getAmount()));
-    balance.setLastModified(LocalDateTime.now());
-    balanceService.update(balance);
+    updateBalance(balance, deposit.getAmount());
+    Deposit entity = createDeposit(account, deposit, currency);
+    createMovement(entity);
 
+    return new ResponseEntity<>(entity, HttpStatus.OK);
+  }
+
+  private Deposit createDeposit(Account account, Deposit deposit, Currency currency) {
     Deposit entity = new Deposit();
     entity.setDate(LocalDateTime.now());
     entity.setAccount(account);
     entity.setIban(account.getIban());
     entity.setAmount(deposit.getAmount());
     entity.setCurrencyIsoCode(currency.getIsoCode());
-    // TODO documentState
-    entity = depositService.create(entity);
+    return depositService.create(entity);
+  }
 
-    createMovement(entity);
-    return new ResponseEntity<>(entity, HttpStatus.OK);
+  private void updateBalance(Balance balance, BigDecimal transferAmount) {
+    BigDecimal balanceAmount = balance.getAmount();
+    balance.setAmount(balanceAmount.add(transferAmount));
+    balance.setLastModified(LocalDateTime.now());
+    balanceService.update(balance);
+  }
+
+  private boolean containsNullOrEmpty(Deposit deposit) {
+    if (deposit == null || deposit.getAccount() == null
+            || Objects.equals(deposit.getAmount(), null)
+            || deposit.getCurrencyIsoCode() == null) {
+      return true;
+    }
+    if (deposit.getCurrencyIsoCode().isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   private void createMovement(Deposit deposit) {

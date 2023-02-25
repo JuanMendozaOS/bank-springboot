@@ -19,7 +19,6 @@ public class CurrencyController {
     @Autowired
     private CurrencyService currencyService;
 
-    // TODO añadir validaciones
     @GetMapping("/id")
     public Currency findById(@PathVariable("id") Long id){
         return currencyService.findById(id);
@@ -32,14 +31,46 @@ public class CurrencyController {
 
     @PostMapping
     public ResponseEntity<Currency> addCurrency(@RequestBody Currency currency){
+        if (containsNullOrEmpty(currency)){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (currencyExists(currency)){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(createCurrency(currency), HttpStatus.OK);
+    }
+
+    private Currency createCurrency(Currency currency) {
         Currency entity = new Currency();
         entity.setName(currency.getName());
         entity.setIsoCode(currency.getIsoCode());
         entity.setSymbol(currency.getSymbol());
         entity.setLocal(currency.isLocal());
         entity.setEnabled(true);
-        entity = currencyService.create(entity);
-        return new ResponseEntity<>(entity, HttpStatus.OK);
+        return currencyService.create(entity);
+    }
+
+    private boolean currencyExists(Currency currency) {
+        if(currencyService.existsByName(currency.getName())){
+            return true;
+        }
+        if (currencyService.existsByIsoCode(currency.getIsoCode())){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean containsNullOrEmpty(Currency currency) {
+        if (currency == null || currency.getName() == null
+                || currency.getIsoCode() == null || currency.getSymbol() == null){
+            return true;
+        }
+        if (currency.getName().isEmpty() || currency.getIsoCode().isEmpty()
+                || currency.getSymbol().isEmpty()){
+            return true;
+        }
+        return false;
     }
 
 }

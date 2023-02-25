@@ -12,4 +12,6 @@ public interface CurrencyRepository extends JpaRepository<Currency, Long> {
   boolean existsByIsoCode(String isoCode);
 
   Currency findByIsoCode(String currencyIsoCode);
+
+  boolean existsByName(String name);
 }

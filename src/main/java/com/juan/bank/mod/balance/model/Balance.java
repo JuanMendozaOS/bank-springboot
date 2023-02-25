@@ -30,7 +30,6 @@ public class Balance {
   private Account account;
   @ManyToOne
   private Customer customer;
-  // TODO revisión utilizar isoCode
   @ManyToOne
   private Currency currency;
 

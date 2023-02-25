@@ -46,4 +46,8 @@ public class CurrencyService implements EntityServiceInterface<Currency> {
     public Currency findByIsoCode(String currencyIsoCode) {
         return currencyRepo.findByIsoCode(currencyIsoCode);
     }
+
+    public boolean existsByName(String name) {
+        return currencyRepo.existsByName(name);
+    }
 }

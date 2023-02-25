@@ -19,7 +19,6 @@ public class DocumentTypeController {
   @Autowired
   private DocumentTypeService documentTypeService;
 
-  // TODO añadir métodos y validaciones
   @GetMapping
   public List<DocumentType> findAll(){
     return documentTypeService.findAll();

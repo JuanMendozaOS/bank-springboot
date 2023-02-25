@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Juan Mendoza 15/2/2023
@@ -19,7 +20,6 @@ public class CustomerController {
   @Autowired
   private CustomerService customerService;
 
-  // TODO añadir validaciones
   @GetMapping
   public List<Customer> findAll() {
     return customerService.findAll();
@@ -32,6 +32,54 @@ public class CustomerController {
 
   @PostMapping
   public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+
+    if (containsNullOrEmpty(customer)){
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    if(customerExists(customer)){
+      return new ResponseEntity<>(HttpStatus.CONFLICT);
+    }
+
+    return new ResponseEntity<>(createCustomer(customer), HttpStatus.OK);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Customer> update(@PathVariable("id") Long id, @RequestBody Customer customer) {
+    Customer entity = customerService.findById(id);
+    if (hasNullValue(customer, entity)){
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    // verificar que el correo al que se intenta actualizar no lo posee otro customer
+    if (customerService.existsByEmail(customer.getEmail())
+            && !customerService.findByEmail(customer.getEmail()).getId().equals(id)){
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<>(updateCustomer(entity, customer), HttpStatus.OK);
+  }
+
+  private Customer updateCustomer(Customer entity, Customer customer) {
+    if (!customer.getEmail().isEmpty()){
+      entity.setEmail(customer.getEmail());
+    }
+    if(!customer.getPhoneNumber().isEmpty()){
+      entity.setPhoneNumber(customer.getPhoneNumber());
+    }
+    return customerService.update(entity);
+  }
+
+  private boolean hasNullValue(Customer customer, Customer entity) {
+    if (customer == null){
+      return true;
+    }
+    if (entity == null){
+      return true;
+    }
+    return false;
+  }
+
+  private Customer createCustomer(Customer customer) {
     Customer entity = new Customer();
     entity.setFirstName(customer.getFirstName());
     entity.setLastName(customer.getLastName());
@@ -39,19 +87,34 @@ public class CustomerController {
     entity.setPhoneNumber(customer.getPhoneNumber());
     entity.setDocumentNumber(customer.getDocumentNumber());
     entity.setEnabled(true);
-
-    // como funciona la relación??
     entity.setDocumentType(customer.getDocumentType());
-    entity = customerService.create(entity);
-    return new ResponseEntity<>(entity, HttpStatus.OK);
+    return customerService.create(entity);
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<Customer> updateCustomer(@PathVariable("id") Long id, @RequestBody Customer customer) {
-    Customer entity = customerService.findById(id);
-    entity.setEmail(customer.getEmail());
-    entity.setPhoneNumber(customer.getPhoneNumber());
-    entity = customerService.update(entity);
-    return new ResponseEntity<>(entity, HttpStatus.OK);
+  private boolean customerExists(Customer customer) {
+    if(customerService.existsByEmail(customer.getEmail())){
+      return true;
+    }
+    if (customerService.existsByDocumentNumberAndDocumentType(customer.getDocumentNumber(), customer.getDocumentType())){
+      return true;
+    }
+    return false;
   }
+
+  private boolean containsNullOrEmpty(Customer customer) {
+    if (customer == null || customer.getFirstName() == null
+            || customer.getLastName() == null || customer.getEmail() == null
+            || customer.getPhoneNumber() == null || customer.getDocumentNumber() == null
+            || customer.getDocumentType() == null){
+      return true;
+    }
+    if (customer.getFirstName().isEmpty() || customer.getLastName().isEmpty()
+            || customer.getEmail().isEmpty() || customer.getPhoneNumber().isEmpty()
+            || customer.getDocumentNumber().isEmpty()){
+      return true;
+    }
+    return false;
+  }
+
+
 }

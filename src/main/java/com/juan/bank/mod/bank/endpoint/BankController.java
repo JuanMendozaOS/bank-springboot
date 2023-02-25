@@ -1,7 +1,6 @@
 package com.juan.bank.mod.bank.endpoint;
 
 import com.juan.bank.app.exception.DuplicateRecordException;
-import com.juan.bank.app.exception.RecordNotFoundException;
 import com.juan.bank.mod.bank.model.Bank;
 import com.juan.bank.mod.bank.model.BankService;
 
@@ -42,33 +41,13 @@ public class BankController {
   @PostMapping
   public ResponseEntity<Bank> create(@RequestBody Bank bank) {
     try {
-      // validar datos de entrada
-      if (bank.getName() == null || bank.getName().isEmpty()) {
+      if (containsNullOrEmpty(bank)) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      if (bank.getCode() == null || bank.getCode().isEmpty()) {
+      if (bankExists(bank)) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-
-      // consistencia de creación 
-      if (bankService.existsByNameIgnoreCase(bank.getName())) {
-        throw new DuplicateRecordException("Bank already exists: " + bank.getName());
-      }
-      // existsbybankcode redundate
-      if (bankService.existsByCode(bank.getCode())) {
-        throw new DuplicateRecordException("Code already exists: " + bank.getCode());
-      }
-
-      // hacer lo que tengo que hacer
-      Bank entity = new Bank();
-      entity.setName(bank.getName());
-      entity.setCode(bank.getCode());
-      entity.setDescription(bank.getDescription());
-      entity.setEnabled(true);
-
-      // retornar lo que tengo que retornar o excepcionar si algo está mal
-      entity = bankService.create(entity);
-      return new ResponseEntity<>(entity, HttpStatus.OK);
+      return new ResponseEntity<>(createBank(bank), HttpStatus.OK);
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -76,42 +55,71 @@ public class BankController {
     }
   }
 
+
   @PutMapping("/{id}")
   public ResponseEntity<Bank> update(@PathVariable("id") Long id, @RequestBody Bank arg) {
     try {
-      //primero tengo id?
-      if (!bankService.existsById(id)) {
-        return new ResponseEntity<>(HttpStatus.CONFLICT);
-      }
-
-      // si hay buscar entidad en DB
       Bank entity = bankService.findById(id);
       if (entity == null) {
         return new ResponseEntity<>(HttpStatus.CONFLICT);
       }
 
-      // consistencia de creación
       if (bankService.existsByNameIgnoreCase(arg.getName())
               && !Objects.equals(bankService.findByNameIgnoreCase(arg.getName()).getId(), id)) {
         throw new DuplicateRecordException("Bank already exists: " + arg.getName());
       }
 
-      // asignar valores de bank validados sin tocar valores no modificables (aunque lo pasen)
-      if (arg.getName() != null && !arg.getName().isEmpty()) {
-        entity.setName(arg.getName());
-      }
-      if (!(arg.getDescription() == null || arg.getDescription().equals(""))) {
-        entity.setDescription(arg.getDescription());
-      }
-
-
-      entity = bankService.update(entity);
-      return new ResponseEntity<>(entity, HttpStatus.OK);
+      return new ResponseEntity<>(updateBank(entity, arg), HttpStatus.OK);
 
     } catch (Exception e) {
       e.printStackTrace();
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private boolean bankExists(Bank bank) {
+    if (bankService.existsByNameIgnoreCase(bank.getName())) {
+      throw new DuplicateRecordException("Bank already exists: " + bank.getName());
+    }
+    if (bankService.existsByCode(bank.getCode())) {
+      throw new DuplicateRecordException("Code already exists: " + bank.getCode());
+    }
+    return false;
+  }
+
+  private boolean containsNullOrEmpty(Bank bank) {
+    if (bank.getName() == null || bank.getName().isEmpty()) {
+      return true;
+    }
+    if (bank.getCode() == null || bank.getCode().isEmpty()) {
+      return true;
+    }
+    if (bank.getDescription() == null || bank.getDescription().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
+  private Bank createBank(Bank bank) {
+    Bank entity = new Bank();
+    entity.setName(bank.getName());
+    entity.setCode(bank.getCode());
+    entity.setDescription(bank.getDescription());
+    entity.setEnabled(true);
+
+    return bankService.create(entity);
+  }
+
+
+  private Bank updateBank(Bank entity, Bank arg) {
+    // asignar valores de bank validados sin tocar valores no modificables (aunque lo pasen)
+    if (arg.getName() != null && !arg.getName().isEmpty()) {
+      entity.setName(arg.getName());
+    }
+    if (!(arg.getDescription() == null || arg.getDescription().equals(""))) {
+      entity.setDescription(arg.getDescription());
+    }
+    return bankService.update(entity);
   }
 }
 

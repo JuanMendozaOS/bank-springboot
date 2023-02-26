@@ -1,2 +1,2 @@
-# bank-backend-springboot
+# bank-springboot
 REST API para un banco

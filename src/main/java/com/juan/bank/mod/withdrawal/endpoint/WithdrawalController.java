@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 /**
  * @author Juan Mendoza 20/2/2023
@@ -28,60 +26,84 @@ import java.util.logging.Logger;
 @RequestMapping
 public class WithdrawalController {
 
-  @Autowired
-  private WithdrawalService withdrawalService;
-  @Autowired
-  private AccountService accountService;
-  @Autowired
-  private CurrencyService currencyService;
-  @Autowired
-  private BalanceService balanceService;
-  @Autowired
-  private MovementService movementService;
+  private final WithdrawalService withdrawalService;
+  private final AccountService accountService;
+  private final CurrencyService currencyService;
+  private final BalanceService balanceService;
+  private final MovementService movementService;
 
-  // TODO validar... validar
+  @Autowired
+  public WithdrawalController(WithdrawalService withdrawalService, AccountService accountService, CurrencyService currencyService, BalanceService balanceService, MovementService movementService) {
+    this.withdrawalService = withdrawalService;
+    this.accountService = accountService;
+    this.currencyService = currencyService;
+    this.balanceService = balanceService;
+    this.movementService = movementService;
+  }
+
   @PostMapping("/withdrawals")
   public ResponseEntity<Withdrawal> create(@RequestBody Withdrawal withdrawal) {
 
-    if (withdrawal == null || withdrawal.getAccount() == null
-            || Objects.equals(withdrawal.getAmount(), null) || withdrawal.getAmount().compareTo(BigDecimal.ZERO) <= 0
-            || withdrawal.getCurrencyIsoCode() == null || withdrawal.getCurrencyIsoCode().isEmpty()) {
+    if (containsNullOrEmpty(withdrawal)) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     Account account = accountService.findById(withdrawal.getAccount().getId());
     Currency currency = currencyService.findByIsoCode(withdrawal.getCurrencyIsoCode());
+
+    if (account == null || currency == null) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
     Balance balance = balanceService.findByAccountId(account.getId());
-
-    // Verificar si no existe el account o moneda
-    if(account == null || currency == null){
+    if (!validateWithdrawal(withdrawal, balance)){
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    BigDecimal balanceAmount = balance.getAmount();
+    updateBalance(balance, withdrawal.getAmount());
+    Withdrawal entity = createWithdrawal(withdrawal, account, currency);
+    createMovement(entity);
 
-    // verificar que el monto de balance no sea menor al monto a retirar
-    if (withdrawal.getAmount().compareTo(balanceAmount) > 0){
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    return new ResponseEntity<>(entity, HttpStatus.OK);
+  }
 
-    // puede dar problemas cuando se afecta la misma columna al mismo tiempo, usar synchonized
-    balance.setAmount(balanceAmount.subtract(withdrawal.getAmount()));
-    balance.setLastModified(LocalDateTime.now());
-    balanceService.update(balance);
-
-    // cargar la entidad con los valores validados
+  private Withdrawal createWithdrawal(Withdrawal withdrawal, Account account, Currency currency) {
     Withdrawal entity = new Withdrawal();
     entity.setDateTime(LocalDateTime.now());
     entity.setAccount(account);
     entity.setIban(account.getIban());
     entity.setAmount(withdrawal.getAmount());
     entity.setCurrencyIsoCode(currency.getIsoCode());
-    entity = withdrawalService.create(entity);
+    return withdrawalService.create(entity);
+  }
 
-    // crear movimiento luego de crear el retiro
-    createMovement(entity);
-    return new ResponseEntity<>(entity, HttpStatus.OK);
+  private void updateBalance(Balance balance, BigDecimal amount) {
+    balance.setAmount(balance.getAmount().subtract(amount));
+    balance.setLastModified(LocalDateTime.now());
+    balanceService.update(balance);
+  }
+
+  private boolean validateWithdrawal(Withdrawal withdrawal, Balance balance) {
+    if (withdrawal.getAmount().compareTo(BigDecimal.ZERO) < 1){
+      return false;
+    }
+    // verificar que el monto de balance no sea menor al monto a retirar
+    if (withdrawal.getAmount().compareTo(balance.getAmount()) > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  private boolean containsNullOrEmpty(Withdrawal withdrawal) {
+    if (withdrawal == null || withdrawal.getAccount() == null
+            || Objects.equals(withdrawal.getAmount(), null)
+            || withdrawal.getCurrencyIsoCode() == null) {
+      return false;
+    }
+    if (withdrawal.getCurrencyIsoCode().isEmpty()) {
+      return false;
+    }
+    return true;
   }
 
   private void createMovement(Withdrawal withdrawal) {

@@ -39,4 +39,19 @@ public class UserService implements EntityServiceInterface<User> {
     return userRepo.findAll();
   }
 
+  public boolean existsByUsername(String username) {
+    return userRepo.existsByUsername(username);
+  }
+
+  public boolean existsByEmail(String email) {
+    return userRepo.existsByEmail(email);
+  }
+
+  public User findByUsername(String username) {
+    return userRepo.findByUsername(username);
+  }
+
+  public User findByEmail(String email) {
+    return userRepo.findByEmail(email);
+  }
 }

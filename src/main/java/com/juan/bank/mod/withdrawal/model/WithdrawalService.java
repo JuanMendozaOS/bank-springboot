@@ -1,7 +1,6 @@
 package com.juan.bank.mod.withdrawal.model;
 
 import com.juan.bank.app.model.EntityServiceInterface;
-import com.juan.bank.mod.account.model.Account;
 import com.juan.bank.mod.balance.model.Balance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

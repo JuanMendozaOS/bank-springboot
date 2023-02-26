@@ -1,6 +1,5 @@
 package com.juan.bank.mod.withdrawal.model;
 
-import com.juan.bank.mod.account.model.Account;
 import com.juan.bank.mod.balance.model.Balance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,6 +14,6 @@ public interface WithdrawalRepository extends JpaRepository<Withdrawal, Long> {
 
   List<Withdrawal> findAllWithdrawalByAccountId(Long accountId);
 
-  public Balance findBalanceByAccountIban(String iban);
+  Balance findBalanceByAccountIban(String iban);
 
 }

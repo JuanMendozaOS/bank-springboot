@@ -70,7 +70,6 @@ public class TransferController {
   }
 
 
-  // TODO validaciones... validaciones
   @PostMapping(value = "/transfers", consumes = "application/json", produces = "application/json")
   public ResponseEntity<?> create(@RequestBody Transfer transfer) {
 

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>FORMULARIO DE CREACIÓN DE MONEDA</h1>
+  <p>(esta es una prueba de formulario nomas)</p>
+  <form action="currencies" method="post">
+    <label for="name">Nombre: </label>
+    <input type="text" name="name" required> <br>
+    <label for="symbol">Símbolo: </label>
+    <input type="text" name="symbol" required> <br>
+    <label for="isoCode">Código ISO: </label>
+    <input type="text" name="isoCode" required> <br>
+    <label for="isLocal"><input type="checkbox" value="isLocal">Es moneda local</label><br>
+    <input type="submit" value="Crear moneda">  
+  </form>
+</body>
+</html>

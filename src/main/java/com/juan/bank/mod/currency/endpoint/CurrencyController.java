@@ -29,8 +29,8 @@ public class CurrencyController {
         return currencyService.findAll();
     }
 
-    @PostMapping
-    public ResponseEntity<Currency> addCurrency(@RequestBody Currency currency){
+    @PostMapping(consumes = "application/x-www-form-urlencoded")
+    public ResponseEntity<Currency> addCurrency(Currency currency){
         if (containsNullOrEmpty(currency)){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

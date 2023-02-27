@@ -9,15 +9,17 @@
 <body>
   <h1>FORMULARIO DE CREACIÓN DE MONEDA</h1>
   <p>(esta es una prueba de formulario nomas)</p>
-  <form action="currencies" method="post">
+  <form action="currencies" method="post" id="web-form">
     <label for="name">Nombre: </label>
-    <input type="text" name="name" required> <br>
+    <input type="text" name="name"> <br>
     <label for="symbol">Símbolo: </label>
-    <input type="text" name="symbol" required> <br>
+    <input type="text" name="symbol"> <br>
     <label for="isoCode">Código ISO: </label>
-    <input type="text" name="isoCode" required> <br>
+    <input type="text" name="isoCode"> <br>
     <label for="isLocal"><input type="checkbox" value="isLocal" name="isLocal">Es moneda local</label><br>
-    <input type="submit" value="Crear moneda">  
+    <button type="submit" name="submityes" id="submityes" class="btn btn-danger" onclick="alert('asdasd')">Submit</button>
   </form>
+
+  <script src="js/prueba.js"></script> 
 </body>
 </html>

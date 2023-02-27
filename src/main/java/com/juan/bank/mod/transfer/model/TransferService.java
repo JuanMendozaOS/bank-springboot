@@ -38,6 +38,10 @@ public class TransferService implements EntityServiceInterface<Transfer> {
     return transferRepo.findAll();
   }
 
+  public List<Transfer> findAllAccountTransfersByIban(String iban) {
+    return transferRepo.findAllByFromIbanOrToIban(iban, iban);
+  }
+
 //  public List<Transfer> findAllTransferByAccountId(Long accountId) {
 //    return transferRepo.findAllTransferByAccountId(accountId);
 //  }

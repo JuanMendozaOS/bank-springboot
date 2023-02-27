@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="css/transfer.css">
+</head>
+<body>
+  <h1 class="title">Transferencia</h1>
+  <form action="/transfers" method="post">
+    <div class="container">
+      <div class="form panel-left">
+        <h2>Datos de origen</h2>
+        <label for="fromIban">Iban: </label>
+        <input type="text" name="fromIban" id="" placeholder="Ingrese el Iban"> 
+        <label for="fromDocumentNumber">Número de documento: </label>
+        <input type="text" name="fromDocumentNumber" id="" placeholder="Ingrese el número de documento"> 
+        <label for="fromBankCode">Código de entidad financiera: </label>
+        <input type="text" name="fromBankCode" id="" placeholder="Ej: BJABCDEXXX">
+        <label for="fromDocumentTypeName">Tipo de documento:</label>
+        <select name="fromDocumentTypeName" id="">
+          <option value="CI">CI</option>
+          <option value="RUC">RUC</option>
+          <option value="Pasaporte">Pasaporte</option>
+        </select>
+      </div>
+      <div class="form panel-right">
+        <h2>Datos de destino</h2>
+        <label for="toIban">Iban: </label> 
+        <input type="text" name="toIban" id="" placeholder="Ingrese el Iban"> 
+        <label for="toDocumentNumber">Número de documento: </label>
+        <input type="text" name="toDocumentNumber" id="" placeholder="Ingrese el número de documento">
+        <label for="toBankCode">Código de entidad financiera: </label>
+        <input type="text" name="toBankCode" id="" placeholder="Ej: BJABCDEXXX">
+        <label for="toDocumentTypeName">Tipo de documento:</label>
+        <select name="toDocumentTypeName" id="">
+          <option value="CI">CI</option>
+          <option value="RUC">RUC</option>
+          <option value="Pasaporte">Pasaporte</option>
+        </select>
+      </div>
+    </div>
+    <div class="transfer-data">
+      <label for="amount">Monto a enviar: </label>
+      <input type="number" name="amount" id="" placeholder="">
+      <label for="toDocumentTypeName">Seleccione la moneda</label>
+      <select name="currencyIsoCode" id="">
+        <option value="PYG">PYG</option>
+        <option value="USD">USD</option>
+      </select>
+      <button type="submit">Enviar</button>
+    </div>
+   
+  </form>
+</body>
+</html>

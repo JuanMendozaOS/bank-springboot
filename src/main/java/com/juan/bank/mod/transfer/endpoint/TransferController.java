@@ -23,9 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Juan Mendoza 20/2/2023
@@ -71,8 +69,8 @@ public class TransferController {
   }
 
 
-  @PostMapping(value = "/transfers", consumes = "application/x-www-form-urlencoded", produces = "application/json")
-  public ResponseEntity<?> create(@RequestBody Transfer transfer) {
+  @PostMapping(value = "/transfers", consumes = {"application/json", "application/x-www-form-urlencoded"}, produces = "application/json")
+  public ResponseEntity<?> create(Transfer transfer) {
 
     Bank myBank = bankService.findByCode("BJABCDEXXX");
     if (containsNullOrEmpty(transfer)) {
@@ -209,7 +207,7 @@ public class TransferController {
     Account fromAccount = accountService.findByIban(transfer.getFromIban());
     Account toAccount = accountService.findByIban(transfer.getToIban());
 
-    if (!validateAccounts(transfer, fromAccount, toAccount).get("")) {
+    if (!validateAccounts(transfer, fromAccount, toAccount)) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
@@ -221,9 +219,9 @@ public class TransferController {
     }
 
     // acá debo crear el transfer
-    Transfer entity = new Transfer();
+    Transfer entity = transfer;
     entity.setTransactionState("EN PROCESO");
-    entity = createTransfer(transfer);
+    entity = createTransfer(entity);
 
     // para cuenta de origen
     updateBalance(fromBalance, transfer.getAmount().negate());
@@ -232,6 +230,10 @@ public class TransferController {
     // para cuenta de destino
     updateBalance(toBalance, transfer.getAmount());
     createMovement(transfer, toAccount, transfer.getAmount(), false);
+
+    entity.setAccreditationDate(LocalDateTime.now());
+    entity.setTransactionState("FINALIZADO");
+    entity = transferService.update(entity);
     return new ResponseEntity<>(entity, HttpStatus.OK);
   }
 
@@ -301,39 +303,37 @@ public class TransferController {
     return response;
   }
 
-  private Map<String, Boolean> validateAccounts(Transfer transfer, Account fromAccount, Account toAccount) {
-    Map<String, Boolean> result = new HashMap<>();
-
+  private boolean validateAccounts(Transfer transfer, Account fromAccount, Account toAccount) {
+ 
     if (fromAccount == null) {
-      result.put("Cuenta de origen incorrecta", false);
-      return result;
+      System.out.println("Cuenta de origen incorrecta");
+      return false;
     }
     if (!fromAccount.getCustomer().getDocumentNumber().equals(transfer.getFromDocumentNumber())) {
-      result.put("Número de documento de origen incorrecto", false);
-      return result;
+      System.out.println("Número de documento de origen incorrecto");
+      return false;
     }
-    if (!fromAccount.getCustomer().getDocumentType().equals(transfer.getFromDocumentType())) {
-      result.put("Tipo de documento de origen incorrecto", false);
-      return result;
+    if (!fromAccount.getCustomer().getDocumentTypeName().equals(transfer.getFromDocumentTypeName())) {
+      System.out.println("Tipo de documento de origen incorrecto");
+      return false;
     }
     if (toAccount == null) {
-      result.put("Cuenta de destino incorrecta", false);
-      return result;
+      System.out.println("Cuenta de destino incorrecta");
+      return false;
     }
     if (!toAccount.getCustomer().getDocumentNumber().equals(transfer.getToDocumentNumber())) {
-      result.put("Número de documento de destino incorrecto", false);
-      return result;
+      System.out.println("Número de documento de destino incorrecto");
+      return false;
 
     }
-    if (!toAccount.getCustomer().getDocumentType().equals(transfer.getToDocumentType())) {
-      result.put("Tipo de documento de destino incorrecto", false);
-      return result;
+    if (!toAccount.getCustomer().getDocumentTypeName().equals(transfer.getToDocumentTypeName())) {
+      System.out.println("Tipo de documento de destino incorrecto");
+      return false;
     }
     if (!toAccount.isEnabled()) {
-      result.put("Cuenta de destino no habilitada", false);
-      return result;
+      System.out.println("Cuenta de destino no habilitada");
+      return false;
     }
-    result.put("", true);
-    return result;
+    return true;
   }
 }

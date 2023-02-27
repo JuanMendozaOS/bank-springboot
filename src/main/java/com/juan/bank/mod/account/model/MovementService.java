@@ -37,4 +37,8 @@ public class MovementService implements EntityServiceInterface<Movement> {
   public List<Movement> findAll() {
     return movementRepo.findAll();
   }
+
+  public List<Movement> findAllAccountMovements(Long id){
+    return movementRepo.findAllMovementsByAccountId(id);
+  }
 }

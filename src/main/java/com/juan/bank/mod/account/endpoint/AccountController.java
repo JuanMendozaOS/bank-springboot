@@ -1,9 +1,6 @@
 package com.juan.bank.mod.account.endpoint;
 
-import com.juan.bank.mod.account.model.Account;
-import com.juan.bank.mod.account.model.AccountService;
-import com.juan.bank.mod.account.model.AccountType;
-import com.juan.bank.mod.account.model.AccountTypeService;
+import com.juan.bank.mod.account.model.*;
 import com.juan.bank.mod.balance.model.Balance;
 import com.juan.bank.mod.balance.model.BalanceService;
 import com.juan.bank.mod.bank.model.Bank;
@@ -14,6 +11,8 @@ import com.juan.bank.mod.customer.model.Customer;
 import com.juan.bank.mod.customer.model.CustomerService;
 import com.juan.bank.mod.deposit.model.Deposit;
 import com.juan.bank.mod.deposit.model.DepositService;
+import com.juan.bank.mod.transfer.model.Transfer;
+import com.juan.bank.mod.transfer.model.TransferService;
 import com.juan.bank.mod.withdrawal.model.Withdrawal;
 import com.juan.bank.mod.withdrawal.model.WithdrawalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +41,11 @@ public class AccountController {
   private final CustomerService customerService;
   private final AccountTypeService accountTypeService;
   private final CurrencyService currencyService;
+  private final MovementService movementService;
+  private final TransferService transferService;
 
   @Autowired
-  public AccountController(AccountService accountService, WithdrawalService withdrawalService, BalanceService balanceService, DepositService depositService, BankService bankService, CustomerService customerService, AccountTypeService accountTypeService, CurrencyService currencyService) {
+  public AccountController(AccountService accountService, WithdrawalService withdrawalService, BalanceService balanceService, DepositService depositService, BankService bankService, CustomerService customerService, AccountTypeService accountTypeService, CurrencyService currencyService, MovementService movementService, TransferService transferService) {
     this.accountService = accountService;
     this.withdrawalService = withdrawalService;
     this.balanceService = balanceService;
@@ -53,6 +54,8 @@ public class AccountController {
     this.customerService = customerService;
     this.accountTypeService = accountTypeService;
     this.currencyService = currencyService;
+    this.movementService = movementService;
+    this.transferService = transferService;
   }
 
   @GetMapping("/{id}")
@@ -65,6 +68,10 @@ public class AccountController {
     return accountService.findAll();
   }
 
+  @GetMapping("{accountId}/movements")
+  public List<Movement> findAllAccountMovements(@PathVariable("accountId") Long accountId){
+    return movementService.findAllAccountMovements(accountId);
+  }
 
   @GetMapping("{accountId}/withdrawals")
   public List<Withdrawal> findAllAccountWithdrawals(@PathVariable("accountId") Long accountId) {
@@ -79,6 +86,15 @@ public class AccountController {
   @GetMapping("{accountId}/deposits")
   public List<Deposit> findAllAccountDeposits(@PathVariable("accountId") Long accountId) {
     return depositService.findAllAccountDeposits(accountId);
+  }
+
+  @GetMapping("{accountId}/transfers")
+  public List<Transfer> findAllAccountTransfers(@PathVariable("accountId") Long accountId) {
+    Account account = accountService.findById(accountId);
+    if (account == null){
+      return null;
+    }
+    return transferService.findAllAccountTransfersByIban(account.getIban());
   }
 
   @PostMapping

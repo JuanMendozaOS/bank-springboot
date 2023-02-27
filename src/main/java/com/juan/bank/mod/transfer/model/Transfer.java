@@ -23,13 +23,15 @@ public class Transfer {
   private String fromBankCode;
   @ManyToOne
   private DocumentType fromDocumentType;
+  private String fromDocumentTypeName;
 
   private String toIban;
   private String toDocumentNumber;
   private String toBankCode;
-
   @ManyToOne
   private DocumentType toDocumentType;
+  private String toDocumentTypeName;
+
 
   private BigDecimal amount;
   private String currencyIsoCode;
@@ -40,16 +42,18 @@ public class Transfer {
 
   public Transfer(){}
 
-  public Transfer(Long id, String fromIban, String fromDocumentNumber, String fromBankCode, DocumentType fromDocumentType, String toIban, String toDocumentNumber, String toBankCode, DocumentType toDocumentType, BigDecimal amount, String currencyIsoCode, LocalDateTime operationDate, LocalDateTime accreditationDate, Long externalTransferId) {
+  public Transfer(Long id, String fromIban, String fromDocumentNumber, String fromBankCode, DocumentType fromDocumentType, String fromDocumentTypeName, String toIban, String toDocumentNumber, String toBankCode, DocumentType toDocumentType, String toDocumentTypeName, BigDecimal amount, String currencyIsoCode, LocalDateTime operationDate, LocalDateTime accreditationDate, Long externalTransferId) {
     this.id = id;
     this.fromIban = fromIban;
     this.fromDocumentNumber = fromDocumentNumber;
     this.fromBankCode = fromBankCode;
     this.fromDocumentType = fromDocumentType;
+    this.fromDocumentTypeName = fromDocumentTypeName;
     this.toIban = toIban;
     this.toDocumentNumber = toDocumentNumber;
     this.toBankCode = toBankCode;
     this.toDocumentType = toDocumentType;
+    this.toDocumentTypeName = toDocumentTypeName;
     this.amount = amount;
     this.currencyIsoCode = currencyIsoCode;
     this.operationDate = operationDate;
@@ -175,6 +179,22 @@ public class Transfer {
 
   public void setExternalTransferId(Long externalTransferId) {
     this.externalTransferId = externalTransferId;
+  }
+
+  public String getFromDocumentTypeName() {
+    return fromDocumentTypeName;
+  }
+
+  public void setFromDocumentTypeName(String fromDocumentTypeName) {
+    this.fromDocumentTypeName = fromDocumentTypeName;
+  }
+
+  public String getToDocumentTypeName() {
+    return toDocumentTypeName;
+  }
+
+  public void setToDocumentTypeName(String toDocumentTypeName) {
+    this.toDocumentTypeName = toDocumentTypeName;
   }
 
   @Override

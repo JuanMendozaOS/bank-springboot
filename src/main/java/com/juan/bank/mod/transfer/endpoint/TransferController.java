@@ -11,6 +11,7 @@ import com.juan.bank.mod.bank.model.BankService;
 import com.juan.bank.mod.currency.model.Currency;
 import com.juan.bank.mod.currency.model.CurrencyService;
 import com.juan.bank.mod.customer.model.CustomerService;
+import com.juan.bank.mod.customer.model.DocumentType;
 import com.juan.bank.mod.customer.model.DocumentTypeService;
 import com.juan.bank.mod.transfer.model.TransactionStateService;
 import com.juan.bank.mod.transfer.model.Transfer;
@@ -70,7 +71,7 @@ public class TransferController {
   }
 
 
-  @PostMapping(value = "/transfers", consumes = "application/json", produces = "application/json")
+  @PostMapping(value = "/transfers", consumes = "application/x-www-form-urlencoded", produces = "application/json")
   public ResponseEntity<?> create(@RequestBody Transfer transfer) {
 
     Bank myBank = bankService.findByCode("BJABCDEXXX");
@@ -244,14 +245,15 @@ public class TransferController {
 
   private boolean containsNullOrEmpty(Transfer transfer) {
     if (transfer == null || transfer.getFromIban() == null || transfer.getFromDocumentNumber() == null
-            || transfer.getFromBankCode() == null || transfer.getFromDocumentType() == null
+            || transfer.getFromBankCode() == null || transfer.getFromDocumentTypeName() == null
             || transfer.getToIban() == null || transfer.getToDocumentNumber() == null
-            || transfer.getToBankCode() == null || transfer.getToDocumentType() == null) {
+            || transfer.getToBankCode() == null || transfer.getToDocumentTypeName() == null) {
       return true;
     }
     if (transfer.getFromIban().isEmpty() || transfer.getFromDocumentNumber().isEmpty()
             || transfer.getFromBankCode().isEmpty() || transfer.getToIban().isEmpty()
-            || transfer.getToDocumentNumber().isEmpty() || transfer.getToBankCode().isEmpty()) {
+            || transfer.getToDocumentNumber().isEmpty() || transfer.getToBankCode().isEmpty()
+            || transfer.getToDocumentTypeName().isEmpty() || transfer.getFromDocumentTypeName().isEmpty()) {
       return true;
     }
     return false;
@@ -278,6 +280,11 @@ public class TransferController {
 
   private Transfer createTransfer(Transfer transfer) {
     Transfer entity = transfer;
+    DocumentType fromDocType = documentTypeService.findByName(transfer.getFromDocumentTypeName());
+    DocumentType toDocType = documentTypeService.findByName(transfer.getToDocumentTypeName());
+
+    entity.setFromDocumentType(fromDocType);
+    entity.setToDocumentType(toDocType);
     entity.setOperationDate(LocalDateTime.now());
     entity = transferService.create(entity);
     return entity;

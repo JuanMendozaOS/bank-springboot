@@ -29,7 +29,7 @@ public class CurrencyController {
         return currencyService.findAll();
     }
 
-    @PostMapping(consumes = "application/x-www-form-urlencoded")
+    @PostMapping(consumes = "*/*")
     public ResponseEntity<Currency> addCurrency(Currency currency){
         if (containsNullOrEmpty(currency)){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DocumentTypeRepository extends JpaRepository<DocumentType, Long> {
+  DocumentType findByName(String documentTypeName);
 }

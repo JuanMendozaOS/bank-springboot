@@ -91,9 +91,9 @@ public class AccountController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
-      Bank bank = bankService.findById(account.getBank().getId());
+      Bank bank = bankService.findByCode("BJABCDEXXX");
       Customer customer = customerService.findById(account.getCustomer().getId());
-      Currency currency = currencyService.findByIsoCode(account.getCurrency().getIsoCode());
+      Currency currency = currencyService.findByIsoCode(account.getCurrencyIsoCode());
       AccountType accountType = accountTypeService.findById(account.getAccountType().getId());
 
       if(hasNullValue(bank, customer, currency, accountType)){
@@ -155,8 +155,8 @@ public class AccountController {
 
   private boolean containsNullOrEmpty(Account account) {
     if (account == null || account.getIban() == null
-            || account.getAccountType() == null || account.getBank() == null
-            || account.getCurrencyIsoCode() == null || account.getCustomer() == null){
+            || account.getAccountType() == null || account.getCurrencyIsoCode() == null
+            || account.getCustomer() == null){
       return true;
     }
     if (account.getCurrencyIsoCode().isEmpty() || account.getIban().isEmpty()){

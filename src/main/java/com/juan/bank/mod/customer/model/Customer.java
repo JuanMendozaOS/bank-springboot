@@ -1,6 +1,5 @@
 package com.juan.bank.mod.customer.model;
 
-import com.juan.bank.mod.user.model.User;
 import jakarta.persistence.*;
 
 /**
@@ -24,14 +23,12 @@ public class Customer {
   @ManyToOne
   @JoinColumn(name = "document_type_id")
   private DocumentType documentType;
-
-  @OneToOne(mappedBy = "customer")
-  private User user;
+  private String documentTypeName;
 
   public Customer() {
   }
 
-  public Customer(Long id, String firstName, String lastName, String email, String phoneNumber, String documentNumber, DocumentType documentType, boolean enabled) {
+  public Customer(Long id, String firstName, String lastName, String email, String phoneNumber, String documentNumber, DocumentType documentType, boolean enabled, String documentTypeName) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
@@ -40,6 +37,7 @@ public class Customer {
     this.documentNumber = documentNumber;
     this.documentType = documentType;
     this.enabled = enabled;
+    this.documentTypeName = documentTypeName;
   }
 
   public Long getId() {
@@ -106,6 +104,14 @@ public class Customer {
     this.documentType = documentType;
   }
 
+  public String getDocumentTypeName() {
+    return documentTypeName;
+  }
+
+  public void setDocumentTypeName(String documentTypeName) {
+    this.documentTypeName = documentTypeName;
+  }
+
   @Override
   public String toString() {
     return "Customer{" +
@@ -119,4 +125,5 @@ public class Customer {
             ", enabled=" + enabled +
             '}';
   }
+
 }

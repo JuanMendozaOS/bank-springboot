@@ -38,4 +38,8 @@ public class DocumentTypeService implements EntityServiceInterface<DocumentType>
   public List<DocumentType> findAll() {
     return documentTypeRepo.findAll();
   }
+
+  public DocumentType findByName(String documentTypeName) {
+    return documentTypeRepo.findByName(documentTypeName);
+  }
 }

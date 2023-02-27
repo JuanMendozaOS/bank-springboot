@@ -2,6 +2,8 @@ package com.juan.bank.mod.customer.endpoint;
 
 import com.juan.bank.mod.customer.model.Customer;
 import com.juan.bank.mod.customer.model.CustomerService;
+import com.juan.bank.mod.customer.model.DocumentType;
+import com.juan.bank.mod.customer.model.DocumentTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,14 @@ import java.util.List;
 @RequestMapping("/customers")
 public class CustomerController {
 
+  private final CustomerService customerService;
+  private final DocumentTypeService docTypeService;
+
   @Autowired
-  private CustomerService customerService;
+  public CustomerController(CustomerService customerService, DocumentTypeService docTypeService) {
+    this.customerService = customerService;
+    this.docTypeService = docTypeService;
+  }
 
   @GetMapping
   public List<Customer> findAll() {
@@ -59,10 +67,10 @@ public class CustomerController {
   }
 
   private Customer updateCustomer(Customer entity, Customer customer) {
-    if (!customer.getEmail().isEmpty()){
+    if (customer.getEmail() != null && !customer.getEmail().isEmpty()){
       entity.setEmail(customer.getEmail());
     }
-    if(!customer.getPhoneNumber().isEmpty()){
+    if(customer.getPhoneNumber() != null && !customer.getPhoneNumber().isEmpty()){
       entity.setPhoneNumber(customer.getPhoneNumber());
     }
     return customerService.update(entity);
@@ -80,13 +88,16 @@ public class CustomerController {
 
   private Customer createCustomer(Customer customer) {
     Customer entity = new Customer();
+    DocumentType documentType = docTypeService.findByName(customer.getDocumentTypeName());
+
     entity.setFirstName(customer.getFirstName());
     entity.setLastName(customer.getLastName());
     entity.setEmail(customer.getEmail());
     entity.setPhoneNumber(customer.getPhoneNumber());
     entity.setDocumentNumber(customer.getDocumentNumber());
     entity.setEnabled(true);
-    entity.setDocumentType(customer.getDocumentType());
+    entity.setDocumentTypeName(documentType.getName());
+    entity.setDocumentType(documentType);
     return customerService.create(entity);
   }
 
@@ -104,12 +115,12 @@ public class CustomerController {
     if (customer == null || customer.getFirstName() == null
             || customer.getLastName() == null || customer.getEmail() == null
             || customer.getPhoneNumber() == null || customer.getDocumentNumber() == null
-            || customer.getDocumentType() == null){
+            || customer.getDocumentTypeName() == null){
       return true;
     }
     if (customer.getFirstName().isEmpty() || customer.getLastName().isEmpty()
             || customer.getEmail().isEmpty() || customer.getPhoneNumber().isEmpty()
-            || customer.getDocumentNumber().isEmpty()){
+            || customer.getDocumentNumber().isEmpty() || customer.getDocumentTypeName().isEmpty()){
       return true;
     }
     return false;

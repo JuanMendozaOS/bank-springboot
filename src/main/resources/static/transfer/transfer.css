@@ -46,6 +46,10 @@ button[type="submit"]{
   margin: 1rem 4rem;
 
 }
+button[type="submit"]:hover{
+  background-color: rgb(37, 72, 187);
+
+}
 .title{
   text-align: center;
   padding: 1rem;

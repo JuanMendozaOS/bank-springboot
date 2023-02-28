@@ -69,8 +69,8 @@ public class TransferController {
   }
 
 
-  @PostMapping(value = "/transfers", consumes = {"application/json", "application/x-www-form-urlencoded"}, produces = "application/json")
-  public ResponseEntity<?> create(Transfer transfer) {
+  @PostMapping(value = "/transfers", consumes = {"application/json"}, produces = "application/json")
+  public ResponseEntity<?> create(@RequestBody Transfer transfer) {
 
     Bank myBank = bankService.findByCode("BJABCDEXXX");
     if (containsNullOrEmpty(transfer)) {
@@ -126,7 +126,7 @@ public class TransferController {
       entity.setAccreditationDate(LocalDateTime.now());
       entity.setTransactionState("FINALIZADO");
       entity.setExternalTransferId(transfer.getId());
-      transferService.update(entity);
+      entity = transferService.update(entity);
       return new ResponseEntity<>(entity, HttpStatus.OK);
 
     } catch (Exception e) {
@@ -177,7 +177,7 @@ public class TransferController {
         aux = entity.getId();
         entity.setId(entity.getExternalTransferId());
         entity.setExternalTransferId(aux);
-
+        
         entity = transferService.update(entity);
         return new ResponseEntity<>(entity, HttpStatus.OK);
 
@@ -249,13 +249,15 @@ public class TransferController {
     if (transfer == null || transfer.getFromIban() == null || transfer.getFromDocumentNumber() == null
             || transfer.getFromBankCode() == null || transfer.getFromDocumentTypeName() == null
             || transfer.getToIban() == null || transfer.getToDocumentNumber() == null
-            || transfer.getToBankCode() == null || transfer.getToDocumentTypeName() == null) {
+            || transfer.getToBankCode() == null || transfer.getToDocumentTypeName() == null 
+            || transfer.getAmount() == null || transfer.getCurrencyIsoCode() == null) {
       return true;
     }
     if (transfer.getFromIban().isEmpty() || transfer.getFromDocumentNumber().isEmpty()
             || transfer.getFromBankCode().isEmpty() || transfer.getToIban().isEmpty()
             || transfer.getToDocumentNumber().isEmpty() || transfer.getToBankCode().isEmpty()
-            || transfer.getToDocumentTypeName().isEmpty() || transfer.getFromDocumentTypeName().isEmpty()) {
+            || transfer.getToDocumentTypeName().isEmpty() || transfer.getFromDocumentTypeName().isEmpty() 
+            || transfer.getCurrencyIsoCode().isEmpty()) {
       return true;
     }
     return false;
@@ -288,8 +290,7 @@ public class TransferController {
     entity.setFromDocumentType(fromDocType);
     entity.setToDocumentType(toDocType);
     entity.setOperationDate(LocalDateTime.now());
-    entity = transferService.create(entity);
-    return entity;
+    return transferService.create(entity);
   }
 
 

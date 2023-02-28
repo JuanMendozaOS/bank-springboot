@@ -98,12 +98,12 @@ public class WithdrawalController {
     if (withdrawal == null || withdrawal.getAccount() == null
             || Objects.equals(withdrawal.getAmount(), null)
             || withdrawal.getCurrencyIsoCode() == null) {
-      return false;
+      return true;
     }
     if (withdrawal.getCurrencyIsoCode().isEmpty()) {
-      return false;
+      return true;
     }
-    return true;
+    return false;
   }
 
   private void createMovement(Withdrawal withdrawal) {

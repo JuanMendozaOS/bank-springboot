@@ -1,29 +1,41 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bootstrap demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.3/css/dataTables.bulma.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
+  <link rel="stylesheet" href="movement/movement.css">
 </head>
-  <body>
-    <h1>Lista de movimientos</h1>
+
+<body>
+  <main>
+    <h1 class="title">Lista de movimientos</h1>
     <div class="container">
-    <table class="table table-bordered" id="movementTable">
+      <table class="table table-bordered table-hover" id="movementTable">
         <thead>
-          <tr class="table-primary">
-            <th scope="col">#</th>
-            <th scope="col">Tipo operación</th>
-            <th scope="col">Monto</th>
-            <th scope="col">Moneda</th>
-            <th scope="col">Fecha/hora</th>
+          <tr class="table-active">
+            <th scope="col" class="text-white">#</th>
+            <th scope="col" class="text-white">Tipo operación</th>
+            <th scope="col" class="text-white">Monto</th>
+            <th scope="col" class="text-white">Moneda</th>
+            <th scope="col" class="text-white">Fecha/hora</th>
           </tr>
         </thead>
         <tbody id="tableBody">
         </tbody>
       </table>
     </div>
-    <script src="movement/movement.js"></script>
+  </main>
+  <script src="//cdn.datatables.net/1.13.3/js/jquery.dataTables.min.js"></script>
+  <script src="movement/movement.js"></script>
+  <script src="https://cdn.datatables.net/1.13.3/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.3/js/dataTables.bulma.min.js"></script>
 </body>
+
 </html>

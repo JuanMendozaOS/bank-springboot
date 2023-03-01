@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,53 +10,53 @@
   <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
 
 </head>
+
 <body>
-  <h1 class="title">Transferencia</h1>
-  <form action="/transfers" method="post" id="transferForm">
-    <div class="container">
-      <div class="form panel-left">
-        <h2>Datos de origen</h2>
-        <label for="fromIban">Iban: </label>
-        <input type="text" name="fromIban" id="" placeholder="Ingrese el Iban"> 
-        <label for="fromDocumentNumber">Número de documento: </label>
-        <input type="text" name="fromDocumentNumber" id="" placeholder="Ingrese el número de documento"> 
-        <label for="fromBankCode">Código de entidad financiera: </label>
-        <input type="text" name="fromBankCode" id="" placeholder="Ej: BJABCDEXXX">
-        <label for="fromDocumentTypeName">Tipo de documento:</label>
-        <select name="fromDocumentTypeName" id="">
-          <option value="CI">CI</option>
-          <option value="RUC">RUC</option>
-          <option value="Pasaporte">Pasaporte</option>
-        </select>
+  <main>
+    <form action="/transfers" method="post" id="transferForm">
+      <h1 class="title">Transferencia</h1>
+      <div class="container">
+        <div class="form panel-left">
+          <h2 class="subtitle">Datos de origen</h2>
+          <input type="text" name="fromIban" id="" placeholder="Ingrese el Iban">
+          <input type="text" name="fromDocumentNumber" id="" placeholder="Ingrese el número de documento">
+          <input type="text" name="fromBankCode" id="" placeholder="Ej: BJABCDEXXX">
+          <select name="fromDocumentTypeName" id="">
+            <option value="" disabled selected>Seleccione documento</option>
+            <option value="CI">CI</option>
+            <option value="RUC">RUC</option>
+            <option value="Pasaporte">Pasaporte</option>
+          </select>
+        </div>
+        <div class="form panel-right">
+          <h2 class="subtitle">Datos de destino</h2>
+          <input type="text" name="toIban" id="" placeholder="Ingrese el Iban">
+          <input type="text" name="toDocumentNumber" id="" placeholder="Ingrese el número de documento">
+          <input type="text" name="toBankCode" id="" placeholder="Ej: BJABCDEXXX">
+          <select name="toDocumentTypeName" id="">
+            <option value="" disabled selected>Seleccione documento</option>
+            <option value="CI">CI</option>
+            <option value="RUC">RUC</option>
+            <option value="Pasaporte">Pasaporte</option>
+          </select>
+        </div>
       </div>
-      <div class="form panel-right">
-        <h2>Datos de destino</h2>
-        <label for="toIban">Iban: </label> 
-        <input type="text" name="toIban" id="" placeholder="Ingrese el Iban"> 
-        <label for="toDocumentNumber">Número de documento: </label>
-        <input type="text" name="toDocumentNumber" id="" placeholder="Ingrese el número de documento">
-        <label for="toBankCode">Código de entidad financiera: </label>
-        <input type="text" name="toBankCode" id="" placeholder="Ej: BJABCDEXXX">
-        <label for="toDocumentTypeName">Tipo de documento:</label>
-        <select name="toDocumentTypeName" id="">
-          <option value="CI">CI</option>
-          <option value="RUC">RUC</option>
-          <option value="Pasaporte">Pasaporte</option>
+      <div class="transfer-data">
+        <label for="amount">Monto a enviar: </label>
+        <input type="number" name="amount" id="" placeholder="">
+        <label for="toDocumentTypeName">Seleccione la moneda</label>
+        <select name="currencyIsoCode" id="">
+          <option value="PYG">PYG</option>
+          <option value="USD">USD</option>
         </select>
+        <button type="submit">Enviar</button>
       </div>
-    </div>
-    <div class="transfer-data">
-      <label for="amount">Monto a enviar: </label>
-      <input type="number" name="amount" id="" placeholder="">
-      <label for="toDocumentTypeName">Seleccione la moneda</label>
-      <select name="currencyIsoCode" id="">
-        <option value="PYG">PYG</option>
-        <option value="USD">USD</option>
-      </select>
-      <button type="submit">Enviar</button>
-    </div>
-   
+  </main>
+  <video autoplay muted loop id="myVideo">
+    <source src="https://i.imgur.com/TrIPx6Q.mp4" type="video/mp4">
+  </video>
   </form>
   <script type="text/javascript" src="transfer/transfer.js"></script>
 </body>
+
 </html>
